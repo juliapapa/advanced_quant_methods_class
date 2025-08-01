@@ -1,0 +1,65 @@
+---
+title: "Assignment 5"
+author: "Júlia Papa"
+date: "2025-07-29"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+warchest <- read_csv("C:/Users/julia/Documents/FGV/Advanced_Methods/Aula 5/warchest.csv")
+library(survival)
+```
+
+Read Box-Steffensmeier (1996) and replicate her duration study using both Weibull and Cox models. Both the original article and the replication dataset ("warchest.csv") are available on E-learning. Complete the following tasks:
+
+**Exercise 1**: produce a summary statistics table (1 pt)
+
+```{r ex1,include = TRUE}
+summary(warchest)
+```
+
+**Exercise 2**: Produce a regression table to report Weibull and Cox models results (1 pts)
+
+```{r ex2,include = TRUE}
+# Weinbull Model
+wbm1 <- survreg(Surv(te, censor) ~ south + wc + dem + pvote, data = warchest) 
+summary(wbm1)
+
+# Cox Model
+cox1 <- coxph(Surv(te, censor) ~ south + wc + dem + pvote, data = warchest)
+summary(cox1)
+```
+
+**Exercise 3:** interpret the effect of significant variables (2 pts)
+
+1.  **Cox Model**
+    -   the variable south and dem are not significant (p-value \>0.05)
+
+    -   **War chest (wc)** –\> significant (p-value \< 0.01)
+
+        -   The Hazard Ratio is 0.0157. This means that for every one-unit increase in the 'War Chest' variable, the hazard of a high-quality challenger entering **decreases** by a substantial 98.43% (1 - 0.0157 = 0.9843). In other words, a larger war chest is associated with a significantly *longer* time until a high-quality challenger enters.
+
+    -   **Prior vote % (pvote)** –\> highly significant (p \< 0.001)
+
+        -   The Hazard Ratio is 0.0006242. This indicates that for every one percentage point increase in the 'Prior Vote Percentage', the hazard of a high-quality challenger entering **decreases** very substantially (by over 99.9%). This implies that incumbents who won with a higher prior vote percentage face a dramatically *longer* time until a high-quality challenger enters.
+2.  **Weibull Model**
+    -   The variables south and dem are not significant (p-value \> 0.05)
+
+    -   **War chest (wc)** –\> significant (p \< 0.01)
+
+        -   For every one-unit increase in the 'War Chest' variable, the expected time until a high-quality challenger enters is multiplied by approximately 3.644. This means a larger war chest is associated with a **longer** expected duration until a challenger appears.
+
+    -   **Prior Vote % (pvote)** –\> highly significant (p \< 0.001)
+
+        -   For every one percentage point increase in 'Prior Vote Percentage', the expected time until a high-quality challenger enters is multiplied by approximately 9.896. This implies that incumbents who won with a higher prior vote percentage face a **longer** expected duration until a challenger appears.
+
+**Exercise 4:** check if the Cox proportional hazard assumption is invalid (1 pt)
+
+```{r ex4, include=TRUE}
+test_results <- cox.zph(cox1)
+print(test_results)
+```
+
+The test reveals significant violations for both the 'War Chest' (wc) and 'Prior Vote Percentage' (pvote) variables. This indicates that the effects of these two covariates on the hazard of challenger entry are not constant over time. The global test further confirms an overall violation of the assumption for the entire model.

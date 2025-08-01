@@ -1,0 +1,76 @@
+---
+title: "Assignment 1 - Júlia Papa"
+author: "Júlia Papa"
+date: "2025-07-08"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+qog_2019 <- read_csv("C:/Users/julia/Documents/FGV/Advanced_Methods/Aula 1/qog_2019.csv")
+View(qog_2019)
+```
+
+**Exercise 1** - 1. Briefly explain the relationships between the critical value, p-value, and statistical significance (4 pts)
+
+These 3 concepts are fundamental to hypothesis testing:
+
+### 1. P-value and Statistical Significance ($\alpha$ )
+
+-   When the p-value is \< or = to the $\alpha$, the result is considered statistically significant, meaning there is strong evidence to reject H0.
+
+-   When the p-value is \> than $\alpha$, the result is not statistically significat, meaning there is not enough evidence to reject H0.
+
+### 2. Critical Value and Statistical Significance ($\alpha$)
+
+-   The critical value is directly determined by the chosen significance level For a given statistical test and degrees of freedom, a specific $\alpha$ will correspond to a particular critical value(s) that marks the rejection region(s). A smaller $\alpha$ (e.g., 0.01 instead of 0.05) will lead to more extreme critical values, making it harder to reject H0, thus requiring stronger evidence.
+
+### 3. P-value and Critical Value
+
+-   These two approaches lead to the same conclusion regarding the H0:
+
+    -   When you use the critical value approach, you calculate a test statistic and you calculate a test statistic from your data and compare it to the critical value. If the test statistic falls in the rejection region, you reject the H0.
+
+    -   When you use the p-value approach, you calculate the p-value associated with your test statistic. If this p-value is less than $\alpha$ it implies that your test statistic is in the rejection region defined by the critical value.
+
+**Exercise 2 -** How many countries that have a "g_effective" score higher than China? (2 pt)
+
+52 countries have a g_effective score higher than China.
+
+```{r ex2, include=TRUE}
+china <- qog_2019$g_effective[qog_2019$cname == "China"]
+higher_china <- sum(qog_2019$g_effective > china, na.rm = T)
+higher_china
+```
+
+**Exercise 3 -** What are the mean and standard deviation of "g_effective" score of these countries found in the last question? (2 pt)
+
+The mean is 1.256738 and the standard deviation is 0.4827013.
+
+```{r ex3, include = TRUE}
+higher <- qog_2019[qog_2019$g_effective > china,] 
+# mean 
+mean_ge <- mean(higher$g_effective, na.rm = T)
+mean_ge
+# standard deviation
+sd_ge <- sd(higher$g_effective, na.rm = T)
+sd_ge
+```
+
+**Exercise 4 -** If China's polity2 score increases by 8 units, what would be the mean of GDP per capita for the countries whose polity2 score is higher than China's? (2 pt)
+
+The mean of GDP per capita for these countries would be 16532.66
+
+```{r ex4, include = TRUE}
+
+qog_2019$polity2_new <- qog_2019$polity2
+qog_2019$polity2_new[qog_2019$cname == 'China'] <-  qog_2019$polity2[qog_2019$cname == 'China']
+china_polity2_new <- qog_2019$polity2_new[qog_2019$cname == "China"]
+higher_polity2 <- qog_2019[qog_2019$polity2_new > china_polity2_new, ]
+mean_polity2 <- mean(higher_polity2$gdppc, na.rm = T)
+mean_polity2
+```

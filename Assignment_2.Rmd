@@ -1,0 +1,111 @@
+---
+title: "Assignment 2"
+author: "Júlia Papa"
+date: "2025-07-08"
+output: word_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stargazer)
+library(readr)
+qog <- read_csv("C:/Users/julia/Documents/FGV/Advanced_Methods/Aula 2/qog_long.csv")
+View(qog)
+```
+
+Use the following variables from qog_long.csv to conduct regression
+analysis and answer the following questions (answers, table, and figures
+are put in one word document):
+
+-   iiag_gov: overall quality of governance (outcome variable) •
+
+-   mad_gdppc: GDP per capita
+
+-   pwt_pop: population in millions
+
+-   al_language: language fragmentation
+
+-   bti_ffe: free and fair election, 10 for the best
+
+-   al_ethnic: ethnic fractionalization
+
+**EXERCISE 1** - Built a linear model with all the variables, estimate
+parameters, create a table, and interpret the result for each
+explanatory variable (4 pts)
+
+```{r ex1, include = TRUE}
+model1 <- lm(iiag_gov ~ mad_gdppc + pwt_pop + al_language + al_ethnic + bti_ffe, data = qog)
+model1
+## I'll use stargazer to create the table
+ stargazer(model1, type = "text", title = "Regression Results for Governance Quality",
+         dep.var.labels = "Overall Quality of Governance",
+           covariate.labels = c("GDP per capita", "Population (millions)",
+                                "Language Fragmentation", "Ethnic Fractionalization",
+                                "Free and Fair Election"),
+           notes = "Standard errors in parentheses. * p < 0.1; ** p < 0.05; *** p < 0.01")
+```
+
+**RESULTS INTERPRETATION FOR EACH EXPLANATORY VARIABLE**
+
+-   **mad_gdppc**: A one-unit increase in GDP per capita is associated
+    with a 0.001 unit increase in governance quality, a small, but
+    statistically significant positive effect.
+
+-   **pwt_pop**: Population size shows a minor negative association
+    (-0.029) with governance quality, but this effect is not
+    statistically significant.
+
+-   **al_language**: Language fragmentation has a positive coefficient
+    (6.735) but is not statistically significant, suggesting no clear
+    linear impact on governance quality.
+
+-   **bti_ffe**: A one-unit increase in the free and fair election
+    indicator significantly increases governance quality by 2.589 units,
+    indicating a strong positive relationship.
+
+-   **al_ethnic**: Ethnic fractionalization has a negative association
+    (-5.563) with governance quality, but this is not statistically
+    significant.
+
+-   **Constant**: The estimated baseline governance quality score is
+    32.557 when all other variables are zero, and this is statistically
+    significant.
+
+**EXERCISE 2 -** According to the model, how would the quality of
+governance score change if the free and fair election indicator
+increases from 4 to 6? (2 pt)
+
+It would change by 5.177504 points.
+
+```{r ex2, include= TRUE}
+beta_ffe <- coef(model1)["bti_ffe"]
+change_in_ffe <- 6 - 4
+delta <- beta_ffe * change_in_ffe
+print(delta)
+```
+
+**EXERCISE 3 -** Among the explanatory variables with significance,
+which one has a bigger impact? (2 pt)
+
+bti_ffe is the one tha has a bigger impact.
+
+**EXERCISE 4 -** Do you think the model works fine with the data
+according to the model diagnostics? Briefly explain your reasons (2 pt)
+
+```{r ex4, include=TRUE, echo=TRUE}
+summary(model1)
+plot(model1)
+```
+
+The model **does not work perfectly fine** with the data. While it shows
+**strong explanatory power** (R²=0.717, significant F-statistic), the
+diagnostic plots indicate issues. There is **evidence of
+heteroscedasticity** in the Residuals vs. Fitted and Scale-Location
+plots, where the spread of residuals increases with fitted values. The
+Normal Q-Q plot also shows **slight deviations from normality** at the
+tails. These violations of assumptions mean the standard errors and
+p-values might not be entirely reliable, even though no highly
+influential observations were found.

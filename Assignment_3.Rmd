@@ -1,0 +1,81 @@
+---
+title: "Assignment 3"
+author: "Júlia Papa"
+date: "2025-07-11"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(haven)
+library(tidyverse)
+library(lmtest)
+library(haven)
+library(stargazer)
+load("~/FGV/Advanced_Methods/Aula 3/AJPS_strategic_spending_original.RData")
+```
+
+I chose the study "Strategic Spending: Does Politics Inﬂuence Election Administration Expenditure?" by Mohr et al. (2019).
+
+**Exercise 1:** briefly explain what the original study is about (research question, key hypothesis, findings)
+
+This study investigates whether political factors, specifically the partisan makeup of county commissions and the county's electorate, influence how much money is spent on election administration. The core hypothesis is that Republican-majority county commissions will spend less on election administration, especially in areas with a strong Republican voter base. The research found that in North Carolina, Republican county commissions indeed spend significantly less on election administration once the county's electorate reaches a sufficient Republican majority, suggesting that political considerations play a key role in election spending decisions.
+
+**Exercise 2:** run a linear model to examine one key hypothesis, using the replication data (make sure the hypothesis can be examined by linear regression; for time-series cross-sectional data, only focus on one year)
+
+```{r ex2, include = TRUE}
+## first step -- filter the data to analyze just one year (2014)
+data_2014 <- table %>%
+  filter(year == 2014)
+ 
+## second - transform all the necessary data (log)
+data_2014 <- data_2014 %>%
+mutate(electop = ifelse(is.na(electop), electwages + electother, electop)) %>%
+mutate(totelectspend = electop + electconst + electfixed) %>% 
+mutate(adjtotelectspend = totelectspend / cpi * 352.6) %>%
+mutate(adjtotexpvoter = adjtotelectspend / registered) %>% 
+mutate(lnadjtotexpvoter = log(adjtotexpvoter)) %>% # Dependent Variable
+mutate(avgvotepct = registered / votepct) %>%
+mutate(lnavgvotepct = log(avgvotepct)) %>% # Control Variable
+mutate(lntotpop = log(totpop)) %>% #Control Variable
+mutate(partcommrep = as.factor(partcommrep)) %>% #partcommrep is a factor for correct interaction with R
+mutate(percrepvote = votesreppres / votespres * 100) %>% #Main Independent Variable
+mutate(pervapnw = nonwhitevap / vap * 100) # Control Variable
+
+# Model
+model <- lm(lnadjtotexpvoter ~ percrepvote * partcommrep + lntotpop +
+               + pervapnw + lnavgvotepct, data = data_2014)
+```
+
+**Exercise 3:** report your result with a table and interpret your findings
+
+```{r ex3, include = TRUE}
+summary(model)
+```
+
+**RESULTS**
+
+The model explains about 65% of the variation in election administration spending per registered voter, and the model as a whole is highly significant.
+
+**Key Findings:**
+
+**Total Population (lntotpop):** Counties with larger total populations tend to spend less per registered voter on election administration, suggesting potential economies of scale. This effect is highly significant (p \< 0.001).
+
+**Non-White Voting Age Population (pervapnw):** Counties with a higher percentage of non-white voting-age population spend slightly less per registered voter. This effect is significant (p \< 0.05).
+
+**Voters per Precinct (lnavgvotepct):** As the number of voters per precinct increases, spending per registered voter decreases, also suggesting economies of scale. This effect is significant (p \< 0.01).
+
+**Hypothesis Test (Republican Commission & Voter Base):** H1 that Republican-majority county commissions spend less on election administration, especially in areas with a strong Republican voter base, is not supported by these results. Neither the direct effect of a Republican commission (partcommrep1) nor the interaction term between percrepvote (Republican presidential vote percentage) and partcommrep is statistically significant. This means:
+
+-   There's no statistically significant evidence that Republican-majority commissions, by themselves, lead to lower spending.
+-   The influence of the Republican voter base on spending doesn't significantly change based on whether the commission is Republican-controlled.
+
+It is important to notice that in the original paper, the authors use many more control variables, they do not use a linear regression, but a GMM estimation (Generalized method moments) and, finally they use panel data (1994-2014), while I analyzed just 2014. All of this might have affected my results.
+
+**BIBLIOGRAPHY**
+
+Mohr, Zachary, JoEllen V. Pope, Martha E. Kropf, and Mary Jo Shepherd. 2019. “Strategic Spending: Does Politics Influence Election Administration Expenditure?” *American Journal of Political Science* 63 (2): 427–38.[doi: 10.1111/ajps.12422](https://doi.org/10.1111/ajps.12422 "https://doi.org/10.1111/ajps.12422")
+
+Pope, JoEllen; Kropf, Martha; Shepherd, Mary Jo; Mohr, Zachary, 2019, "CODEBOOK.pdf", *Replication Data for: Strategic Spending: Does Politics Influence Election Administration Expenditure?*, <https://doi.org/10.7910/DVN/8KNF3I/5LGSCB>, Harvard Dataverse, V1
+
+Pope, JoEllen; Kropf, Martha; Shepherd, Mary Jo; Mohr, Zachary, 2019, "Replication Data for: Strategic Spending: Does Politics Influence Election Administration Expenditure?", <https://doi.org/10.7910/DVN/8KNF3I>, Harvard Dataverse, V1, UNF:6:Avxe/NFbJVvU/lqcPe+lRA== [fileUNF]

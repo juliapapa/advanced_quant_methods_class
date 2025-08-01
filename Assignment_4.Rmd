@@ -1,0 +1,65 @@
+---
+title: "Assignment 4"
+author: "Júlia Papa"
+date: "2025-07-20"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# dataset upload
+library(stargazer)
+library(readr)
+qog <- read_csv("qog_long.csv")
+```
+
+**Instructions:** Use the previous qog_long.csv dataset on E-learning to do the following tasks
+
+**Exercise 1:** Dichotomize the governance quality score (iiag_gov), using "50" as the cutoff (coded 1 when the variable is higher than 50, and 0 otherwise)
+
+```{r ex1, include=TRUE}
+qog$high_gov_quality <- as.integer(qog$iiag_gov > 50)
+# Test to verify if it worked
+head(qog$high_gov_quality)
+```
+
+**Exercise 2:** Run a logit model on this binary outcome, with three explanatory variables, including mad_gdppc (GDP per capita), al_ethnic (ethnic fragmentation), and bti_ffe (free and fair election score)
+
+```{r ex2, include=TRUE}
+logit_model <- glm(high_gov_quality ~ mad_gdppc + al_ethnic + bti_ffe,
+                   data = qog,
+                   family = binomial(link = "logit"))
+logit_model
+```
+
+**Exercise 3:** Report Regression result with a table
+
+```{r ex3, include = TRUE}
+library(stargazer)
+stargazer(logit_model, type = "text")
+```
+
+**Exercise 4:** Interpret the magnitude of effect for statistically significant variable(s), using both "divide-by-4'' and odds methods.
+
+bti_ffe is the only significant variable (p \< 0.01)\*\*\*
+
+```{r ex4, include = TRUE}
+# Extract coefficient for bti_ffe
+coeff_bti_ffe <- coef(logit_model)["bti_ffe"]
+
+# Interpretation using "divide-by-4" rule
+effect_bti_ffe_divide_by_4 <- coeff_bti_ffe / 4
+effect_bti_ffe_divide_by_4
+
+# Interpretation using Odds Ratios
+odds_ratio_bti_ffe <- exp(coeff_bti_ffe)
+odds_ratio_bti_ffe
+```
+
+-   **Divide-by-4 rule interpretation**
+
+    -   For every one-unit increase in bti_ffe, the probability of high governance quality is estimated to increase by approximately 0.1707087;
+
+-   **Odds ratios interpretation**
+
+    -    For every one-unit increase in bti_ffe, the odds of high governance quality are multiplied by approximately 1.979481 (an increase of about 97.94809).
